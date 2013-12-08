@@ -15,18 +15,15 @@ module Cps =
 
   let run k (Cps x) = x k
 
-let printResult: int -> unit = printfn "result = %d"
+  let bind f cps =
+    Cps (fun k -> cps |> run (fun value -> f value |> run k))
 
-let makeDupCps (x: int) : Cps<int, unit> =
-  let dup =
-    fun resultHandler ->
-      let result = x * x
-      resultHandler result
-  Cps dup
+let dup = fun value -> Cps.unit' (value * value)
+
+let printResult: int -> unit = printfn "result = %d"
 
 [<EntryPoint>]
 let main _ =
   let x = 10
-  makeDupCps x
-  |> Cps.run printResult
+  x |> Cps.unit' |> Cps.bind dup |> Cps.run printResult
   0
