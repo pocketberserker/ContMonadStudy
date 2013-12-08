@@ -37,7 +37,7 @@ let testFact () =
   let init = (10, 1) ||> Arg.of' |> Cps.unit'
   let rec loop iter =
     if (iter |> Cps.run id).isAtEnd then iter
-    else loop (iter |> Cps.bind fact)
+    else loop (iter |> Cps.run id |> Cps.unit' |> Cps.bind fact)
   let result =
     init
     |> loop
