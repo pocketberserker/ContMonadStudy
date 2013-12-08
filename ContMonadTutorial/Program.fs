@@ -1,5 +1,10 @@
-﻿
+﻿module ContMonadTutorial
+
+let dup x = x * x
+
 [<EntryPoint>]
-let main argv = 
-    printfn "%A" argv
-    0 // 整数の終了コードを返します
+let main _ =
+  let x = 10
+  let result = dup x
+  printfn "result = %d" result
+  0
