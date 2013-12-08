@@ -17,15 +17,32 @@ module Cps =
   let bind f cps =
     Cps (fun k -> cps |> run (fun value -> f value |> run k))
 
-let rec fact =
-  fun n ->
-    printfn "fact(%d)" n
-    if n = 0 then Cps.unit' 1
-    else fact (n - 1) |> Cps.bind (((*) n) >> Cps.unit')
+type Arg = {
+  value : int
+  acc : int
+}
+
+let rec fact = function
+| { value = v; acc = a } ->
+  if v = 0 then Cps.unit' { value = v; acc = a }
+  else { value = v - 1; acc = a * v } |> Cps.unit'
 
 let testFact () =
-  let result = Cps.unit' 10 |> Cps.bind fact |> Cps.run id
-  assert (result = 3628800)
+  let result =
+    { value = 10; acc = 1 }
+    |> Cps.unit'
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.bind fact
+    |> Cps.run id
+  assert (result.acc = 3628800)
 
 [<EntryPoint>]
 let main _ =
