@@ -2,20 +2,16 @@
 
 let printResult: int -> unit = printfn "result = %d"
 
+let makeCps (run: (int -> unit) -> unit) = run
+
 let makeDupCps (x: int) : (int -> unit) -> unit =
-  fun resultHandler ->
+  let dup = fun resultHandler ->
     let result = x * x
     resultHandler result
+  makeCps dup
 
 [<EntryPoint>]
 let main _ =
   let x = 10
-  let printResultInHtml: int -> unit =
-    printfn """<html>
-    <head><title>Result</title><head>
-    <body>
-        Result = %d
-    </body>
-</html>"""
-  makeDupCps x printResultInHtml
+  makeDupCps x printResult
   0
