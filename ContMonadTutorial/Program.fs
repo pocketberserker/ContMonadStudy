@@ -10,5 +10,12 @@ let makeDupCps (x: int) : (int -> unit) -> unit =
 [<EntryPoint>]
 let main _ =
   let x = 10
-  makeDupCps x printResult
+  let printResultInHtml: int -> unit =
+    printfn """<html>
+    <head><title>Result</title><head>
+    <body>
+        Result = %d
+    </body>
+</html>"""
+  makeDupCps x printResultInHtml
   0
