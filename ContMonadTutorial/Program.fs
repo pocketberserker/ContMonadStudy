@@ -17,35 +17,17 @@ module Cps =
   let bind f cps =
     Cps (fun k -> cps |> run (fun value -> f value |> run k))
 
-type BinaryValue = {
-  left: int
-  right: int
-}
+let rec fact =
+  fun n ->
+    printfn "fact(%d)" n
+    if n = 0 then Cps.unit' 1
+    else fact (n - 1) |> Cps.bind (((*) n) >> Cps.unit')
 
-module CpsTest =
-
-  open Basis.Core
-
-  let parse<'R> : string -> Cps<BinaryValue, 'R> =
-    fun value ->
-      let (left, right) = value |> Str.split2 ","
-      Cps.unit' { left = int left; right = int right}
-
-  let sum<'R> : BinaryValue -> Cps<int, 'R> =
-    function {left = left; right = right} -> Cps.unit' (left + right)
-
-let printResult = printfn "result = %d"
-
-let restCps () =
-  let result =
-    "10,20"
-    |> Cps.unit'
-    |> Cps.bind CpsTest.parse
-    |> Cps.bind CpsTest.sum
-    |> Cps.run id
-  assert (result = 30)
+let testFact () =
+  let result = Cps.unit' 10 |> Cps.bind fact |> Cps.run id
+  assert (result = 3628800)
 
 [<EntryPoint>]
 let main _ =
-  restCps ()
+  testFact ()
   0
