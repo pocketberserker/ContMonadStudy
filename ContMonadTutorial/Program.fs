@@ -36,11 +36,16 @@ module CpsTest =
 
 let printResult = printfn "result = %d"
 
+let restCps () =
+  let result =
+    "10,20"
+    |> Cps.unit'
+    |> Cps.bind CpsTest.parse
+    |> Cps.bind CpsTest.sum
+    |> Cps.run id
+  assert (result = 30)
+
 [<EntryPoint>]
 let main _ =
-  "10,20"
-  |> Cps.unit'
-  |> Cps.bind CpsTest.parse
-  |> Cps.bind CpsTest.sum
-  |> Cps.run printResult
+  restCps ()
   0
