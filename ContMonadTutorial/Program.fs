@@ -1,6 +1,5 @@
 ﻿module ContMonadTutorial
 
-
 type Cps<'T, 'R> =
   | Cps of run: (('T -> 'R) -> 'R)
 
@@ -18,12 +17,30 @@ module Cps =
   let bind f cps =
     Cps (fun k -> cps |> run (fun value -> f value |> run k))
 
-let dup = fun value -> Cps.unit' (value * value)
+type BinaryValue = {
+  left: int
+  right: int
+}
 
-let printResult: int -> unit = printfn "result = %d"
+module CpsTest =
+
+  open Basis.Core
+
+  let parse<'R> : string -> Cps<BinaryValue, 'R> =
+    fun value ->
+      let (left, right) = value |> Str.split2 ","
+      Cps.unit' { left = int left; right = int right}
+
+  let sum<'R> : BinaryValue -> Cps<int, 'R> =
+    function {left = left; right = right} -> Cps.unit' (left + right)
+
+let printResult = printfn "result = %d"
 
 [<EntryPoint>]
 let main _ =
-  let x = 10
-  x |> Cps.unit' |> Cps.bind dup |> Cps.run printResult
+  "10,20"
+  |> Cps.unit'
+  |> Cps.bind CpsTest.parse
+  |> Cps.bind CpsTest.sum
+  |> Cps.run printResult
   0
