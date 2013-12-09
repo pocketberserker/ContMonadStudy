@@ -20,6 +20,13 @@ module Cps =
   let callCC f =
     Cps (fun k -> f (fun value -> Cps (fun _ -> k value)) |> run k)
 
+  type CpsBuilder internal () =
+    member this.Bind(x, f) = bind f x
+    member this.Return(x) = unit'
+    member this.ReturnFrom(x) = x
+
+  let cps = new CpsBuilder()
+
 type BinaryValue = {
   left : int
   right : int
@@ -50,11 +57,10 @@ let format = fun value -> Cps.unit' ("result = " + value.ToString())
 
 [<EntryPoint>]
 let main _ =
-  Cps.callCC (fun exit ->
-    "1020"
-    |> Cps.unit'
-    |> Cps.bind (safetyParse exit)
-    |> Cps.bind (CpsTest.sum)
-    |> Cps.bind format)
+  Cps.callCC (fun exit -> Cps.cps {
+    let! a = safetyParse exit "1020"
+    let! b = CpsTest.sum a
+    return! (format b)
+  })
   |> Cps.run printResult
   0
