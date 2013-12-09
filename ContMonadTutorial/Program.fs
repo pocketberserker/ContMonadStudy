@@ -20,6 +20,41 @@ module Cps =
   let callCC f =
     Cps (fun k -> f (fun value -> Cps (fun _ -> k value)) |> run k)
 
+type BinaryValue = {
+  left : int
+  right : int
+}
+
+module CpsTest =
+
+  let sum = function
+  | { left = l; right = r } -> Cps.unit' (l + r)
+
+open Basis.Core
+
+let safetyParse exit =
+  fun value ->
+    let components = value |> Str.splitBy ","
+    if components |> Array.length < 2 then
+      exit "*** Error: too few numbers."
+    else
+      try
+        let left = components.[0] |> int
+        let right = components.[1] |> int
+        Cps.unit' { left = left; right = right }
+      with
+        | e -> exit ("*** Error: invalid number format:" + e.Message)
+
+let printResult = printfn "%s"
+let format = fun value -> Cps.unit' ("result = " + value.ToString())
+
 [<EntryPoint>]
 let main _ =
+  Cps.callCC (fun exit ->
+    "1020"
+    |> Cps.unit'
+    |> Cps.bind (safetyParse exit)
+    |> Cps.bind (CpsTest.sum)
+    |> Cps.bind format)
+  |> Cps.run printResult
   0
