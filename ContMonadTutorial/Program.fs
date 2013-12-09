@@ -22,7 +22,7 @@ module Cps =
 
   type CpsBuilder internal () =
     member this.Bind(x, f) = bind f x
-    member this.Return(x) = unit'
+    member this.Return(x) = unit' x
     member this.ReturnFrom(x) = x
 
   let cps = new CpsBuilder()
